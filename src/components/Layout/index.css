@@ -1,0 +1,45 @@
+
+body{
+    margin: 0;
+    padding: 0;
+}
+ul,li,ol{
+    margin: 0;
+    padding: 0;
+}
+.container{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+.container .header{
+    height: 60px;
+    background: #333;
+    color: #fff;
+}
+.container .middle{
+    position: absolute;
+    width: 100%;
+    overflow: hidden;
+    top: 60px;
+    /* 设置这个让高度撑满 */
+    bottom: 0;
+}
+.container .aside{
+    width: 200px;
+    background: #008c8c;
+    position: absolute;
+    height: 100%;
+    left: 0;
+}
+.container .main{
+    position: absolute;
+    left: 200px;
+    /* 设置宽度自适应 */
+    right: 0;
+    /* 设置高度自适应 */
+    top: 0;
+    bottom: 0;
+}

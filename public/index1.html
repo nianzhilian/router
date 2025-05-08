@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选中文字标记示例</title>
+    <style>
+        /* 定义标记文字的样式 */
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <p>这是一个示例文本。你可以选中其中的文字来查看标记效果。</p>
+        <p>这里有一些 <b>加粗</b> 文字和 <i>斜体</i> 文字。</p>
+        <p>还有 <a href="#">链接</a> 文字。</p>
+    </div>
+    <button id="toggleHighlight">标记/取消标记选中文字</button>
+
+    <script>
+        document.getElementById('toggleHighlight').addEventListener('click', function() {
+            toggleHighlight();
+        });
+
+        function toggleHighlight() {
+            let selection = window.getSelection();
+            if (selection.rangeCount === 0) return;
+            let range = selection.getRangeAt(0);
+
+            if (range.toString().length === 0) {
+                // 没有选中文本
+                return;
+            }
+
+            let commonAncestor = range.commonAncestorContainer;
+            let nodes = textNodesUnder(commonAncestor);
+
+            for (let node of nodes) {
+                let startOffset = node === range.startContainer ? range.startOffset : 0;
+                let endOffset = node === range.endContainer ? range.endOffset : node.textContent.length;
+
+                if (startOffset < endOffset) {
+                    let newNode = node.splitText(startOffset);
+                    let endNode = newNode.splitText(endOffset - startOffset);
+                    wrapOrUnwrapNode(newNode);
+                }
+            }
+
+            // 清除选中
+            selection.removeAllRanges();
+        }
+
+        function textNodesUnder(node) {
+            let textNodes = [];
+            if (node.nodeType === Node.TEXT_NODE) {
+                textNodes.push(node);
+            } else {
+                for (let child of node.childNodes) {
+                    textNodes = textNodes.concat(textNodesUnder(child));
+                }
+            }
+            return textNodes;
+        }
+
+        function wrapOrUnwrapNode(node) {
+            // 如果 node 的父节点是 <span class="highlight">，则取消标记
+            if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && node.parentNode.className === 'highlight') {
+                let parentSpan = node.parentNode;
+                let parentRange = document.createRange();
+                parentRange.selectNodeContents(parentSpan);
+                parentSpan.parentNode.insertBefore(parentRange.extractContents(), parentSpan);
+                parentSpan.parentNode.removeChild(parentSpan);
+            } else {
+                console.log(node)
+                console.log(node.parentNode);
+                // 否则，将 node 包裹在新的 <span class="highlight"> 中
+                let span = document.createElement('span');
+                span.className = 'highlight';
+                node.parentNode.insertBefore(span, node);
+                span.appendChild(node);
+            }
+        }
+    </script>
+</body>
+</html>

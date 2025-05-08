@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p id="p"><strong>使用下面的按钮</strong>选择或取消选择本段的内容。</p>
+    <button id="select-button">选择段落</button>
+    <button id="deselect-button">取消选择段落</button>
+    <script>
+        const p = document.getElementById("p");
+        const selectButton = document.getElementById("select-button");
+        const deselectButton = document.getElementById("deselect-button");
+
+        selectButton.addEventListener("click", (e) => {
+        // 清除当前的任何选择
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+
+        // 选择段落
+        const range = document.createRange();
+        range.selectNodeContents(p);
+        // console.log(document.getElementsByTagName('strong').item(0))
+        // console.log(range.intersectsNode(document.getElementsByTagName('strong').item(0)))
+        selection.addRange(range);
+        const node = p.firstChild.cloneNode(true);
+        //p.parentNode.insertBefore(range.extractContents(), p);
+        const span = document.createElement("span");
+        span.className="highlight";
+        p.insertBefore(span, p.firstChild);
+        p.insertBefore(document.getElementsByTagName('strong').item(0), span);
+        // span.appendChild(node);
+        //该方法会将一个节点从一个位置移动到另外一个位置，假如该节点存在于节点的文档树中，会先把他从原来的位置移除掉，在插入新的位置中去
+        //这就意味着相同的节点不能同时出现在文档中的不同位置，否则会导致冲突。
+        // 因此，我们需要克隆节点，然后将其插入到文档中。
+        //document.body.appendChild(node)
+        });
+
+        deselectButton.addEventListener("click", (e) => {
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        });
+
+    </script>
+</body>
+</html>

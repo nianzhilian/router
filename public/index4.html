@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选中文字标记示例</title>
+    <style>
+        /* 定义标记文字的样式 */
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content">
+        <!-- <p>这是一个示例文本。你可以选中其中的文字来查看标记效果。</p>
+        <p>这里有一些 <b>加粗</b> 文字和 <i>斜体</i> 文字。</p>
+        <p>还有 <a href="#">链接</a> 文字。</p> -->
+        <p><span style="font-family: 微软雅黑, ”Microsoft YaHei”;">【请在答题纸上作答】</span></p>
+        <p><span style="font-family: 微软雅黑, ”Microsoft YaHei”;">12344556测试测试</span><br></p>
+        <p><span style="font-family: 华文隶书;color: #222222;">冬季的一天下午，</span><span
+                style="font-family: 华文隶书;color: #222222;"><span style="">天空中</span></span><span
+                style="font-family: 华文隶书;color: #222222;">纷纷扬扬飘起了</span><strong><span
+                    style="text-decoration:underline;"><span
+                        style="font-family: 华文隶书;color: #F4B382;">雪花</span></span></strong><span
+                style="font-family: 华文隶书;color: #222222;">，犹如</span><span
+                style="font-family: 华文行楷;color: #222222;">仙女</span><span
+                style="font-family: 华文隶书;color: #222222;">撒下的银花玉叶</span></p>
+        <p><span style="font-family: 华文隶书;color: #222222;">冬季的一天下午，</span><span
+                style="font-family: 华文隶书;color: #222222;"><span style="">天空中</span></span><span
+                style="font-family: 华文隶书;color: #222222;">纷纷扬扬飘起了</span><strong><span
+                    style="text-decoration:underline;"><span
+                        style="font-family: 华文隶书;color: #F4B382;">雪花</span></span></strong><span
+                style="font-family: 华文隶书;color: #222222;">，犹如</span><span
+                style="font-family: 华文行楷;color: #222222;">仙女</span><span
+                style="font-family: 华文隶书;color: #222222;">撒下的银花玉叶</span></p>
+        <p style="text-indent:24px;text-align:justify;"><span
+                style="font-family: 华文行楷;line-height: 150%;">1.优化导出功能，将导出的</span><span
+                style="font-family: 华文行楷;line-height: 150%;"><span style="">word、pdf</span></span><span
+                style="font-family: 华文行楷;line-height: 150%;"><span style="">格式文档内容中会所包含</span><span
+                    style="">html代码去掉；</span></span></p>
+        <p style="text-indent:24px;text-align:justify;"><span
+                style="font-family: 华文行楷;line-height: 150%;">2.优化导出功能，将导出的</span><span
+                style="font-family: 华文彩云;line-height: 150%;">Excel</span><span
+                style="font-family: 华文行楷;line-height: 150%;"><span style="">格式文档内容中会所包含</span><span
+                    style="">html代码去掉；</span></span></p>
+        <p><span style="font-family: 华文行楷;">3.增加按原始试卷顺序导出考生答卷的</span><span
+                style="font-family:华文行楷;color:#FFFFFF;">word、pdf</span><span
+                style="font-family: 华文行楷;">格式文档，按题库中未乱序的顺序导出。</span></p>
+    </div>
+    <button id="markHighlight">标记选中文字</button>
+    <button id="unmarkHighlight">取消标记选中文字</button>
+
+    <script>
+        document.getElementById('markHighlight').addEventListener('click', function () {
+            markSelectedText();
+        });
+
+        document.getElementById('unmarkHighlight').addEventListener('click', function () {
+            unmarkSelectedText();
+        });
+
+        function markSelectedText() {
+            let selection = window.getSelection();
+            if (selection.rangeCount === 0) return;
+            let range = selection.getRangeAt(0);
+            if (range.toString().length === 0) return;
+            console.log(range)
+            //返回目标节点的共有祖先节点
+            let commonAncestor = range.commonAncestorContainer;
+            let nodes = textNodesUnder(commonAncestor, range);
+            console.log(nodes)
+            for (let node of nodes) {
+                let startOffset = node === range.startContainer ? range.startOffset : 0;
+                let endOffset = node === range.endContainer ? range.endOffset : node.textContent.length;
+                console.log(startOffset, endOffset)
+                if (startOffset < endOffset) {
+                    let newNode = node.splitText(startOffset);
+                    console.dir(newNode)
+                    let endNode = newNode.splitText(endOffset - startOffset);
+                    wrapNode(newNode);
+                }
+            }
+
+            // 清除选中
+            selection.removeAllRanges();
+        }
+
+        function unmarkSelectedText() {
+
+            let highlightedNodes = document.querySelectorAll('.highlight');
+            highlightedNodes.forEach(function (span) {
+                let parentRange = document.createRange();
+                parentRange.selectNodeContents(span);
+                span.parentNode.insertBefore(parentRange.extractContents(), span);
+                span.parentNode.removeChild(span);
+            });
+            return;
+            let selection = window.getSelection();
+            if (selection.rangeCount === 0) return;
+            let range = selection.getRangeAt(0);
+
+            if (range.toString().length === 0) return;
+
+            let commonAncestor = range.commonAncestorContainer;
+            let nodes = textNodesUnder(commonAncestor, range);
+
+            for (let node of nodes) {
+                let startOffset = node === range.startContainer ? range.startOffset : 0;
+                let endOffset = node === range.endContainer ? range.endOffset : node.textContent.length;
+
+                if (startOffset < endOffset) {
+                    let newNode = node.splitText(startOffset);
+                    let endNode = newNode.splitText(endOffset - startOffset);
+                    unwrapNode(newNode);
+                }
+            }
+
+            // 清除选中
+            selection.removeAllRanges();
+        }
+
+        function textNodesUnder(node, range) {
+            let textNodes = [];
+
+            if (node.nodeType === Node.TEXT_NODE) {
+                if (isNodeInRange(node, range)) {
+                    textNodes.push(node);
+                }
+            } else {
+                for (let child of node.childNodes) {
+                    textNodes = textNodes.concat(textNodesUnder(child, range));
+                }
+            }
+            return textNodes;
+        }
+
+        function isNodeInRange(node, range) {
+            let nodeRange = document.createRange();
+            nodeRange.selectNodeContents(node);
+            return range.intersectsNode(node);
+        }
+
+        function wrapNode(node) {
+            // 如果 node 的父节点不是 <span class="highlight">，则进行标记
+            if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && node.parentNode.className === 'highlight') {
+                return; // 已经是标记状态，不需要再次标记
+            } else {
+                // 否则，将 node 包裹在新的 <span class="highlight"> 中
+                let span = document.createElement('span');
+                span.className = 'highlight';
+                console.log(node.parentNode)
+                console.dir(node)
+                node.parentNode.insertBefore(span, node);
+                span.appendChild(node);
+            }
+        }
+
+        function unwrapNode(node) {
+            // 如果 node 的父节点是 <span class="highlight">，则取消标记
+            if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && node.parentNode.className === 'highlight') {
+                let parentSpan = node.parentNode;
+                let parentRange = document.createRange();
+                parentRange.selectNodeContents(parentSpan);
+                parentSpan.parentNode.insertBefore(parentRange.extractContents(), parentSpan);
+                parentSpan.parentNode.removeChild(parentSpan);
+            } else {
+                return; // 不是标记状态，不需要取消标记
+            }
+        }
+    </script>
+</body>
+
+</html>

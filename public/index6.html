@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CSS动画效果示例</title>
+    <style>
+      .slide-in {
+        animation: slide-in 2s ease-in-out forwards;
+        transform: translateX(-100%);
+      }
+      @keyframes slide-in {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      .contenteditable-div {
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slide-in">这个元素将在页面加载后从左滑入显示出来。</div>
+    <div class="contenteditable-div" contenteditable="true"></div>
+    <script>
+      //   document.addEventListener('DOMContentLoaded', function() {
+      //       const contenteditableDiv = document.querySelector('.contenteditable-div');
+      //       if (contenteditableDiv && contenteditableDiv.innerHTML.trim() === '') {
+      //           contenteditableDiv.innerHTML = '<p><br></p>';
+      //       }
+      //       // 为contenteditable-div设置占位符
+      //       contenteditableDiv.addEventListener('focus', function() {
+      //           if (this.innerHTML.trim() === '<p><br></p>') {
+      //               this.innerHTML = '';
+      //           }
+      //       });
+      //       contenteditableDiv.addEventListener('blur', function() {
+      //           if (this.innerHTML.trim() === '') {
+      //               this.innerHTML = '<p><br></p>';
+      //           }
+      //       });
+      //   });
+      //   let count = 0;
+
+      //   document.addEventListener("keydown", function (e) {
+      //     if (e.key === "Enter" && e.target.isContentEditable) {
+      //       e.preventDefault();
+      //       const selection = window.getSelection();
+      //       if (!selection.rangeCount) return;
+
+      //       const range = selection.getRangeAt(0);
+      //       const currentParagraph = getClosestParagraph(
+      //         range.commonAncestorContainer
+      //       );
+
+      //       // 创建新段落（自动包含 br）
+      //       const newParagraph = document.createElement("p");
+      //       newParagraph.className = `num-${++count}`;
+      //       newParagraph.appendChild(document.createElement("br"));
+
+      //       // 处理文本分割
+      //       if (range.collapsed) {
+      //         // 获取光标位置
+      //         const { startContainer, startOffset } = range;
+
+      //         // 文本节点分割
+      //         if (startContainer.nodeType === Node.TEXT_NODE) {
+      //           // 分割文本节点
+      //           const newText = startContainer.splitText(startOffset);
+
+      //           // 确保原段落保留 br
+      //           if (!currentParagraph.querySelector("br")) {
+      //             currentParagraph.appendChild(document.createElement("br"));
+      //           }
+
+      //           // 将后半部分移动到新段落
+      //           newParagraph.insertBefore(newText, newParagraph.firstChild);
+      //         }
+      //       }
+
+      //       // 插入新段落
+      //       if (currentParagraph) {
+      //         currentParagraph.parentNode.insertBefore(
+      //           newParagraph,
+      //           currentParagraph.nextSibling
+      //         );
+      //       } else {
+      //         range.insertNode(newParagraph);
+      //       }
+
+      //       // 光标定位到新段落
+      //       const newRange = new Range();
+      //       newRange.setStart(newParagraph, 0);
+      //       newRange.collapse(true);
+      //       selection.removeAllRanges();
+      //       selection.addRange(newRange);
+      //     }
+      //   });
+
+      //   // 获取最近的段落元素
+      //   function getClosestParagraph(node) {
+      //     let current = node;
+      //     while (current && current.nodeType !== Node.ELEMENT_NODE) {
+      //         current = current.parentNode;
+      //     }
+      //     while (current && current.tagName !== "P" && current.parentNode) {
+      //         current = current.parentNode;
+      //     }
+      //     if (current && current.tagName === "P") {
+      //         return current;
+      //     }
+      //     return null;
+      //   }
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && e.target.isContentEditable) {
+          e.preventDefault();
+
+          const selection = window.getSelection();
+          if (!selection.rangeCount) return;
+          const range = selection.getRangeAt(0);
+
+          // 获取光标所在位置的父段落
+          let currentP = range.commonAncestorContainer;
+          // 兼容文本节点的情况，向上查找父级p标签
+          currentP =
+            currentP.nodeType === Node.TEXT_NODE
+              ? currentP.parentElement.closest("p")
+              : currentP.closest("p");
+
+          // 防御性检查：确保找到有效的段落节点
+          if (!currentP || !currentP.parentNode) {
+            console.error("No valid paragraph found");
+            return;
+          }
+
+          // 创建新段落和br元素
+          const newParagraph = document.createElement("p");
+          const br = document.createElement("br");
+          br.className = "ProseMirror-trailingBreak";
+          newParagraph.appendChild(br);
+
+          // 分割当前段落（从光标位置到段落末尾）
+          const afterRange = document.createRange();
+          afterRange.setStart(range.startContainer, range.startOffset);
+          afterRange.setEndAfter(currentP); // 这里已确保currentP是有效节点
+          const afterFragment = afterRange.extractContents();
+
+          // 将分割后的内容包装到新段落
+          const pAfter = document.createElement("p");
+          pAfter.appendChild(afterFragment);
+
+          // 将新元素插入DOM树
+          const parent = currentP.parentNode;
+          parent.insertBefore(pAfter, currentP.nextSibling);
+          parent.insertBefore(newParagraph, pAfter);
+
+          // 清理空段落（可选）
+          if (currentP.textContent.trim() === "") {
+            parent.removeChild(currentP);
+          }
+
+          // 设置光标位置
+          const newRange = document.createRange();
+          newRange.selectNodeContents(newParagraph);
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+      });
+    </script>
+  </body>
+</html>

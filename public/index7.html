@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div
+      id="editor"
+      contenteditable="true"
+      style="border: 1px solid #ccc; padding: 10px"
+    ></div>
+    <div id="content"></div>
+    <div id="sd"></div>
+    <script>
+      const editor = document.getElementById("editor");
+      let num = 0;
+      // 初始化空段落
+      editor.innerHTML = `<p class="p${num}"><br></p>`;
+
+      // 核心：监听回车事件
+      editor.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault(); // 阻止默认换行
+          handleEnterKey();
+        }
+      });
+
+      // 核心：处理回车逻辑
+      function handleEnterKey() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+        let insertedNode;
+        const range = selection.getRangeAt(0);
+        console.log(range);
+        const currentP = findParentParagraph(range.startContainer);
+        console.log(currentP);
+        // 创建新段落
+        const newP = document.createElement("p");
+        newP.className = "p" + ++num;
+
+        if (currentP) {
+          const offset = range.startOffset;
+          const isAtStart =
+            offset === 0 &&
+            (range.startContainer === currentP ||
+              range.startContainer === currentP.firstChild);
+          console.log(isAtStart);
+          console.log(currentP);
+          console.log(currentP.firstChild);
+          if (isAtStart) {
+            newP.innerHTML = "<br>";
+            currentP.before(newP); // 改为插入到前面
+            setCaretPosition(currentP, 0);
+            return; // 提前返回
+          }
+          // 拆分段落内容
+          const splitResult = splitParagraph(currentP, range);
+          if (splitResult) {
+            newP.prepend(splitResult);
+          } else {
+            newP.innerHTML = "<br>";
+          }
+          currentP.after(newP);
+        } else {
+          newP.innerHTML = "<br>";
+          // 在非段落区域插入新段落
+          range.insertNode(newP);
+        }
+
+        // 移动光标到新段落起始位置
+        setCaretPosition(newP, 0);
+      }
+
+      // 辅助：查找父级段落
+      function findParentParagraph(node) {
+        while (node && node !== editor) {
+          if (node.nodeName === "P") {
+            return node;
+          }
+          node = node.parentNode;
+        }
+        return null;
+      }
+
+      // 辅助：拆分段落内容
+      function splitParagraph(paragraph, range) {
+        const textNode = range.startContainer;
+        const offset = range.startOffset;
+
+        if (textNode.nodeType === Node.TEXT_NODE) {
+          console.log("你好阿斯顿发斯蒂芬");
+          console.log(range.startContainer);
+          // 拆分文本节点
+          const newText = textNode.splitText(offset);
+          // 增加空内容检查
+          if (newText.nodeValue === "") {
+            // 移除无用的空文本节点
+            newText.remove();
+            return null;
+          }
+          return newText;
+        }
+        return null;
+      }
+
+      // 核心：设置光标位置
+      function setCaretPosition(node, offset) {
+        const range = document.createRange();
+        const selection = window.getSelection();
+
+        range.setStart(node, offset);
+        range.collapse(true);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      var html = `<p style="font-size:18px;">
+    <span style="font-family: 微软雅黑;;font-size:16px">font-size:18px During a successful business career, she accumulated a great amount of </span><span style="font-family: 微软雅黑;font-size: 16px">________<span style="font-family: 微软雅黑;">.</span></span>
+</p >`;
+      var html2 =
+        '<p style=\'font-size:50px;\'>font-size:20px;<img src="http://localhost/Scripts/KindEditor/Editor/plugins/emoticons/images/0.gif" alt="" border="0" />ds<em style="FONT-sIZE:50PX;font-weight:bold;">fds</em>\n</p>\n<p>\n\ts<span style="font-size:      20px;background:red;">dfd</span>sf<img src="http://localhost/Scripts/KindEditor/Editor/plugins/emoticons/images/19.gif" alt="" border="0" />ds<strong>fdsfds</strong>\n</p>\n<p>\n\t<br />\n<strong></strong>\n</p>\n<p align="center">\n\t<strong>d<span style="font-family:FangSong_GB2312;FONT-SIZE:40px;background:green;">ssa</span>dasasdsad<u>dfds</u><br />\n</strong>\n</p>';
+      function show() {
+        var test =
+          '<p style=\'font-size:50px;\'>font-size:20px;<img src="http://localhost/Scripts/KindEditor/Editor/plugins/emoticons/images/0.gif" alt="" border="0" />ds<em style="FONT-sIZE:50PX;font-weight:bold;">fds</em>\n</p>\n<p>\n\ts<span style="font-size:      20px;background:red;">dfd</span>sf<img src="http://localhost/Scripts/KindEditor/Editor/plugins/emoticons/images/19.gif" alt="" border="0" />ds<strong>fdsfds</strong>\n</p>\n<p>\n\t<br />\n<strong></strong>\n</p>\n<p align="center">\n\t<strong>d<span style="font-family:FangSong_GB2312;FONT-SIZE:40px;background:green;">ssa</span>dasasdsad<u>dfds</u><br />\n</strong>\n</p>';
+        //var test=test.replace(/font-size:\w+;?/g,'');
+        //var test = test.replace(/font-size\s*:\s*[^;]*;?/g,'');
+        var test = test.replace(/(<[^>]+>)/gim, function (exp) {
+          var red2 = exp.replace(/font-size\s*:\s*[^;]*;?/gi, "");
+          return red2;
+        });
+        document.getElementById("sd").innerHTML = test;
+        return test;
+      }
+      console.log(show());
+      console.log("----------------------------");
+      // 缓存正则表达式
+      const outerRegex = /style\s*=\s*["']([^"']*font-size\s*:\s*[^"']*)["']/gi;
+      const innerRegex = /font-size\s*:\s*[^;]+;?/gi;
+      const semicolonRegex = /;+/g;
+      const trimSemicolonRegex = /^;|;$/g;
+      var html3 = `
+  <p>font-size:18px;During a successful business career</p>
+`;
+      function replaceFontSize(text) {
+        // 转换为小写后进行比较
+        if (!text.toLowerCase().includes("font-size")) {
+          return text;
+        }
+        console.log("走这里吗");
+        return text.replace(outerRegex, function (match, styleValue) {
+          console.log(match);
+          let result = styleValue;
+          // 移除所有 font-size 声明
+          result = result.replace(innerRegex, "");
+          // 去除多余的分号
+          result = result
+            .replace(semicolonRegex, ";")
+            .replace(trimSemicolonRegex, "");
+          return 'style="' + result + '"';
+        });
+      }
+      /*function replaceFontSize(text){
+      let result = text;
+        let matchIndex = 0;
+
+        while (matchIndex !== -1) {
+          // 查找 style=" 或 style='
+          matchIndex = result.toLowerCase().indexOf('style="', matchIndex);
+          if (matchIndex === -1) {
+            matchIndex = result.toLowerCase().indexOf("style='", matchIndex);
+          }
+
+          if (matchIndex === -1) {
+            break;
+          }
+
+          const startIndex = matchIndex + 'style="'.length;
+          const endIndex = result.indexOf('"', startIndex);
+          console.log(matchIndex, startIndex, endIndex);
+          if (endIndex === -1) {
+            break;
+          }
+
+          let styleValue = result.substring(startIndex, endIndex);
+
+          // 查找 font-size 声明
+          if (!styleValue.toLowerCase().includes("font-size")) {
+            matchIndex = endIndex + 1;
+            continue;
+          }
+
+          // 移除所有 font-size 声明
+          styleValue = styleValue.replace(innerRegex, "");
+          // 去除多余的分号
+          styleValue = styleValue
+            .replace(semicolonRegex, ";")
+            .replace(trimSemicolonRegex, "");
+
+          // 构建新的 style 属性
+          const newStyle = `style="${styleValue}"`;
+          // 替换原始匹配项
+          result =
+            result.slice(0, matchIndex) + newStyle + result.slice(endIndex + 1);
+
+          // 更新 matchIndex 以避免重复匹配
+          matchIndex += newStyle.length;
+        }
+
+        return result;
+    }*/
+      document.getElementById("content").innerHTML = replaceFontSize(html3);
+      console.log(replaceFontSize(html3));
+    </script>
+  </body>
+</html>

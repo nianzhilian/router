@@ -1,0 +1,86 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+.comp-container{
+  position: relative;
+}
+
+.comp-container .title{
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.comp-container + button{
+  margin-top: 100px;
+}
+.test-appear,.test-exit-active,.test-enter{
+  display: block;
+  opacity: 0;
+  transform: translateX(100px);
+}
+.test-exit-done{
+  opacity: 0;
+}
+.test-appear-active,.test-enter-active{
+  opacity: 1;
+  transition: 10000ms;
+  transform: translateX(0);
+}
+
+.alert-enter{
+  opacity: 0;
+  transform: scale(.9);
+}
+.alert-enter-active{
+  opacity: 1;
+  transform:translateX(0);
+  transition:opacity 300ms,transform 300ms;
+}
+
+.alert-exit-active{
+  opacity: 0;
+  transform: scale(.9);
+  transition: opacity 300ms,transform 300ms;
+}
+/* switch-appear switch-appear-active */
+.switch-exit-active{
+  opacity: 0;
+  transition: 300ms;
+}
+.switch-appear,.switch-enter{
+  opacity: 0;
+}
+.switch-appear-active, .switch-enter-active{
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+/* task-exit task-exit-active */
+.task-exit{
+  transform-origin: left top;
+}
+.task-exit-active{
+  transform: scale(0);
+  transition: transform 200ms;
+}
+.task-enter{
+  /* 设置变形点 */
+  transform-origin: left top;
+  transform: scale(0);
+}
+.task-enter-active{
+  transform: scale(1);
+  transition: transform 200ms;
+}
+/* 从test-enter 到 test-enter-active的过程中 浏览器会直接将opactity 从 0 改成1 没有过渡效果 平滑的将opactiye 从 0 变成1 */
+/* 过渡效果需要定义在最终状态的类，这样当状态改变时 才会有过渡效果 */
