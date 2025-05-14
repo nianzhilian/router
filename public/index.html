@@ -39,6 +39,9 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script>
+      document.addEventListener('click',function(){
+        console.log('组件中的事件还是会冒泡到最顶级事件')
+      })
       //二个阶段  三个状态   未决阶段  完成阶段   三个状态：pending状态 完成状态  失败状态
       var p1 = new Promise((resolve,reject)=>{
         // console.log('创建一个promise对象 会立即执行')

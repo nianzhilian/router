@@ -46,42 +46,6 @@ function Page1(){
   )
 }
 
-class Prompt extends React.Component{
-  static defaultProps = {
-    when:false,
-    message:''
-  }
-  constructor(props){
-    super(props);
-  }
-  //组件挂载时添加阻塞
-  componentDidMount(){
-    this.handleBlock();
-  }
-  //组件更新时更新阻塞
-  componentDidUpdate(){
-    this.handleBlock();
-  }
-  handleBlock(){
-    if(this.props.when){
-      this.unBlock = this.props.history.block(this.props.message)
-    }else{
-      if(this.unBlock){
-        this.unBlock();
-      }
-    }
-  }
-  //组件卸载时取消阻塞
-  componentWillUnmount(){
-    if(this.unBlock){
-      this.unBlock();
-    }
-  }
-  render(){
-    return null;
-  }
-}
-Prompt = withRouter(Prompt);
 class Page2 extends React.Component{
   state = {
     val:''
@@ -92,11 +56,28 @@ class Page2 extends React.Component{
   }
   handleChange(e){
     this.setState({val:e.target.value});
+    //添加阻塞
+    this.handleBlock(e.target.value);
+  }
+  handleBlock(val){
+    if(val){
+      this.unBlock = this.props.history.block("跳转数据将会丢失哦")
+    }else{
+      //如果存在取消阻塞
+      if(this.unBlock){
+        this.unBlock();
+      }
+    }
+  }
+  componentWillUnmount(){
+    //组件卸载时取消阻塞
+    if(this.unBlock){
+      this.unBlock();
+    }
   }
   render(){
     return (
       <>
-      <Prompt when={this.state.val!==''} message="数据未保存，确定要离开吗？" />
       <textarea value={this.state.val} onChange={this.handleChange}></textarea>
       </>
     )
@@ -110,7 +91,6 @@ let SafeNavLink = ({ to, history,location,match,staticContext, ...props }) => {
     {...props}
     to={to}
     onClick={(e) => {
-      //当点击时发现 当前的路由和要跳转的路由相同，则阻止跳转
       if (location.pathname === to) {
         e.preventDefault();
       }
