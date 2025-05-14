@@ -2,7 +2,7 @@ import React, {
   useId,
   useState,
   useEffect,
-  //useReducer,
+  useReducer,
   useCallback,
   useImperativeHandle,
   useRef,
@@ -17,8 +17,6 @@ import {
   Switch,
   withRouter,
   Link,
-  NavLink,
-  Prompt,
   Redirect,
 } from "react-router-dom";
 import { Container, Alert, Button, AlertHeading } from "react-bootstrap";
@@ -38,141 +36,158 @@ import "./index.css";
 import "animate.css";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
-function Page1(){
+function Home(){
   return (
     <div>
-      第一页
+      首页
     </div>
   )
 }
 
-/*class Prompt extends React.PureComponent{
-  constructor(props){
-    super(props);
+function News(props){
+  console.log(props)
+  return (
+    <>
+    <div>
+      <nav>
+        <BetterLink to={{name:"newhome"}} style={{marginRight: '10px'}}>新闻首页</BetterLink>
+        <BetterLink to={{name:"newdetail"}}  style={{marginRight: '10px'}}>新闻详情页</BetterLink>
+        <BetterLink to={{name:"newsearch"}}>新闻搜索页</BetterLink>
+      </nav>
+      <div>
+        {props.children}
+      </div>
+    </div>
+    </>
+  )
+}
+
+function NewHome(){
+  return (
+    <div>
+      新闻首页
+    </div>
+  )
+}
+function NewDetail(){
+  return (
+    <div>
+      详情页
+    </div>
+  )
+}
+function NewSearch(){
+  return (
+    <div>
+      搜索页
+    </div>
+  )
+} 
+const configRoute = [
+  {
+    name:'news',
+    path:'/news',
+    component:News,
+    children:[
+      {
+        name:'newhome',
+        path:'/',
+        component:NewHome,
+        exact:true
+      },
+      {
+        name:'newdetail',
+        path:'/detail',
+        component:NewDetail,
+        exact:true
+      },
+      {
+        name:'newsearch',
+        path:'/search',
+        component:NewSearch,
+        exact:true
+      }
+    ]
+  },
+  {
+    name:'home',
+    path:'/',
+    component:Home
   }
-  handleBlock(){
-    if(this.props.when){
-      //阻塞路由  有返回值 返回的是一个函数   该函数是取消阻塞
-      this.unBlock = this.props.history.block(this.props.message)
+]
+
+function getRoutes(routes,basePath){
+  const rs = routes.map((r,i)=>{
+    const {children,component:Component,path,...rest} = r;
+    let newpath = `${basePath}${path}`;
+    newpath = newpath.replace(/\/\//g,'/');
+    console.log(newpath)
+    return (
+      <Route key={i} {...rest} path={newpath} render={(props)=>{
+        return (
+          <Component {...props}>
+            {children && getRoutes(children,newpath)}
+          </Component>
+        )
+      }} />
+    )
+  })
+  console.log(rs);
+  return (
+    <>
+    <Switch>
+      {rs}
+    </Switch>
+    </>
+  )
+}
+
+function RootRoute(){
+  return (
+    <>
+    {getRoutes(configRoute,'/')}
+    </>
+  )
+}
+
+function getPath(name,baseUrl,routes){
+  for (const rt of routes) {
+    let newpath = baseUrl+rt.path;
+    newpath = newpath.replace(/\/\//g,'/')
+    if(rt.name == name){
+      return  newpath;
     }else{
-      if(this.unBlock){
-        this.unBlock();
+      if(Array.isArray(rt.children)){
+        const path = getPath(name,newpath,rt.children)
+        if(path){
+          return path;
+        }
       }
     }
   }
-  componentDidMount(){
-    this.handleBlock();
-  }
-  componentDidUpdate(){
-    this.handleBlock();
-    console.log('组件更新完毕')
-  }
-  componentWillUnmount(){
-    console.log('组件将要卸载掉')
-    if(this.unBlock){
-      this.unBlock();
-    }
-  }
-  render(){
-    console.log('组件渲染了')
-    return null
-  }
-}
-Prompt = withRouter(Prompt);*/
-class Page2 extends React.Component{
-  state = {
-    val:''
-  }
-  constructor(props){
-    super(props);
-  }
-  // handleBlock(val){
-  //   if(val){
-  //     this.unBlock = this.props.history.block('别乱来，会导致数据丢失，真的要跳转吗？')
-  //   }else{
-  //     if(this.unBlock){
-  //       this.unBlock();
-  //     }
-  //   }
-    
-  //   console.log(this.props)
-  // }
-  componentWillUnmount(){
-    // if(this.unBlock){
-    //   this.unBlock();
-    // }
-  }
-  render() {
-    return (
-      <div>
-        <Prompt when={this.state.val!=''}  message="别乱来，会导致数据丢失，真的要跳转吗？要跳转请点击确定按钮" />
-        <textarea value={this.state.val} onChange={(e)=>{
-          this.setState({
-            val:e.target.value
-          })
-        }}>
-        </textarea>
-      </div>
-    )
-  }
 }
 
-function useReducer(reducer,initialState){
-  const [state, setstate] = useState(initialState);
-  function dispatch(action){
-    const newState = reducer(state,action);
-    setstate(newState)
-  }
-  return [state,dispatch]
-}
-
-function getRandom(min,max){
-  return Math.floor(Math.random()*(max-min)+min)
-}
-
-function todoReducer(state,action){
-  switch (action.type) {
-    case 'add':
-      return [...state,{
-        text:'张三'+getRandom(1,100)
-      }]
-    default:
-      return state
-  }
-}
-
-function Todo(){
-  const [state,dispatch] = useReducer(todoReducer,[]);
-  const elems = state.map((item,index)=><li key={index}>{item.text}</li>);
+function BetterLink({to,...rest}){
+  to.pathname = getPath(to.name,'/',configRoute);
   return (
-    <div>
-      <ul>
-        {elems}
-      </ul>
-      <button onClick={()=>{
-        dispatch({type:'add'})
-      }}>
-        添加
-      </button>
-    </div>
-  )
+    <Link {...rest} to={to} />
+  );
 }
 
 function App(){
   return (
-    <Router getUserConfirmation={(msg,cb)=>{
-      cb(window.confirm(msg));
-    }}>
-      <div className="router-header ">
-        <NavLink to={'/page1'}>页面1</NavLink>
-        <NavLink to={'/page2'}>页面23</NavLink>
-      </div>
-      <Todo />
+    <>
+    <Router>
+      <nav>
+        <BetterLink style={{marginRight: '10px'}} to={{name:'home'}}>首页</BetterLink>
+        <BetterLink style={{marginRight: '10px'}} to={{name:'news'}}>新闻页</BetterLink>
+      </nav>
       <div>
-        <Route path="/page1" component={Page1} />
-        <Route path="/page2" component={Page2} />
+        {/* 路由 */}
+        <RootRoute />
       </div>
     </Router>
+    </>
   )
 }
 
